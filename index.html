@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Geospatial Contour Example 01</title>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <h1>DV-Contour Visualization</h1>
+
+    <style>
+        #time
+        {
+
+            position: absolute;
+            font-size: 10pt;
+            top:20px;
+            left: 20px;
+            font-family:Arial, Helvetica, sans-serif;
+            
+        }
+        .legend_text{
+            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+    </style>
+
+</head>
+<body>
+<svg width="65vw" viewbox="0 0 512 512"></svg> 
+
+<div id='time'> </div>
+
+<script>
+
+    const ts = "./data/Data_CT.csv"; 
+    let svg = d3.select("svg");
+
+    const path = d3.geoPath();
+
+    console.log(ts)
+
+    function contour_map(f_name,val_1,val_2)
+    {
+        d3.csv(f_name).then(function (data)
+        {
+
+            let m= 512, n= 512;   
+
+            let min_Value=val_1
+            let max_Value=val_2
+
+            let values_T= [];
+            data.forEach(function (d) {
+                values_T.push(+d[0])
+            });
+
+            console.table(values_T)
+            
+
+            let colors = d3.scaleLinear()
+                .domain(d3.range(min_Value,max_Value,
+                    parseInt(Math.abs(max_Value-min_Value)/10)))
+                .range([
+                "#ffffff","#ffffff","#2d3f8c", "#3e5eba", "#2b83ba",])
+                .interpolate(d3.interpolateHcl);
+
+            let contours = d3.contours()
+            .size([m, n])
+                .thresholds(d3.range(min_Value,max_Value,190)) // threshold is 6 degrees
+                (values_T);
+
+            svg.append("g").attr("class","contours")
+                .selectAll("path")
+                .data(contours)
+                .enter()
+                .append("path")
+                .attr("d",function(d){return path(d)})
+                .attr("stroke","black")
+                .attr("stroke-width",".1px")
+                .attr("stroke-linejoin", "round")
+                .attr("fill",  function (d) {
+                        return colors(d.value)
+                    })
+        })
+    }
+    function c_map(){
+
+        contour_map(ts,0,2800);
+    }
+
+    c_map()
+    
+
+</script>
+</body>
+</html>
